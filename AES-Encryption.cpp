@@ -26,7 +26,69 @@ void subBytes(unsigned char* state)
 	}
 
 };
-void shiftRows(unsigned char* state) {};
+void shiftRows(unsigned char* state) 
+{
+	/*
+	Before shifting:
+	 0  4  8 12
+	 1  5  9 13
+	 2  6 10 14
+	 3  7 11 15
+
+
+	After shifting:
+	 0  4  8 12
+	 5  8 13  1
+	10 14  2  6 
+	15  3  7 11
+	*/
+
+
+	//The array on which the shifting will be performed
+	unsigned char tmp[16];
+
+	//Shifting in tmp:
+
+
+	tmp[0] = state[0];
+	//Byte numb.1 of the steak becomes byte numb.5 of the output after shiftrow:
+	tmp[1] = state[5];
+	//Byte numb.2 of the steak becomes byte numb.10 of the output after shiftrow:
+	temp[2] = state[10];
+	//Byte numb.3 of the steak becomes byte numb.15 of the output after shiftrow:
+	temp[3] = state[15];
+
+	//Byte numb.4 of the steak becomes byte numb.4 of the output after shiftrow:
+	tmp[4] = state[4];
+	//Byte numb.5 of the steak becomes byte numb.9 of the output after shiftrow:
+	tmp[5] = state[9];
+	//Byte numb.6 of the steak becomes byte numb.14 of the output after shiftrow:
+	temp[6] = state[14];
+	//Byte numb.7 of the steak becomes byte numb.3 of the output after shiftrow:
+	temp[7] = state[3];
+
+	//Byte numb.8 of the steak becomes byte numb.8 of the output after shiftrow:
+	tmp[8] = state[8];
+	//Byte numb.9 of the steak becomes byte numb.13 of the output after shiftrow:
+	tmp[9] = state[13];
+	//Byte numb.10 of the steak becomes byte numb.2 of the output after shiftrow:
+	temp[10] = state[2];
+	//Byte numb.11 of the steak becomes byte numb.7 of the output after shiftrow:
+	temp[11] = state[7];
+
+	//Byte numb.12 of the steak becomes byte numb.12 of the output after shiftrow:
+	tmp[12] = state[12];
+	//Byte numb.13 of the steak becomes byte numb.1 of the output after shiftrow:
+	tmp[13] = state[1];
+	//Byte numb.14 of the steak becomes byte numb.6 of the output after shiftrow:
+	temp[14] = state[6];
+	//Byte numb.15 of the steak becomes byte numb.11 of the output after shiftrow:
+	temp[15] = state[11];
+
+	//Copying shifting to state:
+	for (int i = 0; i < 16; i++)
+		state[i] = tmp[i];
+};
 void mixColumns() {};
 void addRoundKey(unsigned char* state, unsigned char* roundKey) {};
 void AES_Encrypt(unsigned char* message, unsigned char* key)
