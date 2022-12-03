@@ -293,9 +293,14 @@ void AES_Encrypt(unsigned char* message, unsigned char* key)
 	for (int i = 0; i < 16; i++) {
 		state[i] = message[i];
 	}
-	int numberOfRounds = 1;
+	
+	//AES 128 requires 10 rounds, but FINAL ROUND is different :
+	int numberOfRounds = 9;
 
-	keyExpansion();
+	//Expand the keys:
+	unsigned char expandedKey[176]; //define char array of 175 byte, pass in original key and expand using the already defined method
+	keyExpansion(key, expandedKey);
+
 	addRoundKey(state, key); // addRoundKey
 
 	for (int i = 0; i < numberOfRounds; i++)
@@ -303,13 +308,17 @@ void AES_Encrypt(unsigned char* message, unsigned char* key)
 		subBytes(state);
 		shiftRows(state);
 		mixColumns(state);
-		addRoundKey(state, key);
+		addRoundKey(state, expandedKey + (16 * (i + 1))); //using expanded keys for the add round keys
 	}
 
-	// final round
+	//FINAL ROUND:
 	subBytes(state);
 	shiftRows(state);
-	addRoundKey(state, key);
+	addRoundKey(state, expandedKey + 160); //every 16 bytes in expanded key is a new round key
+
+	//Copy over the message with the encrypted message 
+	for (int i = 0; i < 16; i++)
+		message[i] = state[i];
 };
 int main() {
 	unsigned char message[] = "This is the message we will encrypt";
