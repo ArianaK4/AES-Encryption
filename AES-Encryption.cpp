@@ -1,6 +1,7 @@
 #include <iostream>
 using namespace std;
 
+//Inserting the lookup table a.k.a sunstitution box - S-Box:
 unsigned char s_Box[256] =
 { 
 0x63 ,0x7c ,0x77 ,0x7b ,0xf2 ,0x6b ,0x6f ,0xc5 ,0x30 ,0x01 ,0x67 ,0x2b ,0xfe ,0xd7 ,0xab ,0x76
@@ -21,6 +22,7 @@ unsigned char s_Box[256] =
 ,0x8c ,0xa1 ,0x89 ,0x0d ,0xbf ,0xe6 ,0x42 ,0x68 ,0x41 ,0x99 ,0x2d ,0x0f ,0xb0 ,0x54 ,0xbb ,0x16 
 };
 
+//Inserting Multiply by 2 S-BOX:
 unsigned char mul2[] = {
 0x00,0x02,0x04,0x06,0x08,0x0a,0x0c,0x0e,0x10,0x12,0x14,0x16,0x18,0x1a,0x1c,0x1e,
 0x20,0x22,0x24,0x26,0x28,0x2a,0x2c,0x2e,0x30,0x32,0x34,0x36,0x38,0x3a,0x3c,0x3e,
@@ -40,6 +42,7 @@ unsigned char mul2[] = {
 0xfb,0xf9,0xff,0xfd,0xf3,0xf1,0xf7,0xf5,0xeb,0xe9,0xef,0xed,0xe3,0xe1,0xe7,0xe5
 };
 
+//Inserting Multiply by 3 S-BOX:
 unsigned char mul3[] = {
 0x00,0x03,0x06,0x05,0x0c,0x0f,0x0a,0x09,0x18,0x1b,0x1e,0x1d,0x14,0x17,0x12,0x11,
 0x30,0x33,0x36,0x35,0x3c,0x3f,0x3a,0x39,0x28,0x2b,0x2e,0x2d,0x24,0x27,0x22,0x21,
@@ -108,7 +111,7 @@ void KeyExpansionCore(unsigned char* in, unsigned char i)
 	in[2] = s_Box[in[2]];
 	in[3] = s_Box[in[3]];
 
-	//RCon:
+	//RoundConstant RCon:
 	//First byte is added (xor-ed) to whichever rcon replacement/substitution is: 
 	in[0] ^= rcon[i];
 
@@ -187,28 +190,56 @@ void shiftRows(unsigned char* state)
 };
 void mixColumns(unsigned char* state) 
 {
+	//Mix Colums:
+	/*Matrix Multiplication Example:
+	
+	w   a e			2 3 1 1
+	h i   e    X	1 2 3 1   = temp[16]
+	a s c l			1 1 2 3
+	t   r ?			3 1 1 2
+
+	*/
+
+	//Saving the temporary result to the temporary array:
 	unsigned char tmp[16];
 
+	//1st column from 1st matrix xor 1st row from 2nd matrix 
 	tmp[0] = (unsigned char)(mul2[state[0]] ^ mul3[state[1]] ^ state[2] ^ state[3]);
+	//1st column from 1st matrix xor 2nd row from 2nd matrix 
 	tmp[1] = (unsigned char)(state[0] ^ mul2[state[1]] ^ mul3[state[2]] ^ state[3]);
+	//1st column from 1st matrix xor 3rd row from 2nd matrix 
 	tmp[2] = (unsigned char)(state[0] ^ state[1] ^ mul2[state[2]] ^ mul3[state[3]]);
+	//1st column from 1st matrix xor 4th row from 2nd matrix 
 	tmp[3] = (unsigned char)(mul3[state[0]] ^ state[1] ^ state[2] ^ mul2[state[3]]);
 
+	//2nd column from 1st matrix xor 1st row from 2nd matrix 
 	tmp[4] = (unsigned char)(mul2[state[4]] ^ mul3[state[5]] ^ state[6] ^ state[7]);
+	//2nd column from 1st matrix xor 2nd row from 2nd matrix 
 	tmp[5] = (unsigned char)(state[4] ^ mul2[state[5]] ^ mul3[state[6]] ^ state[7]);
+	//2nd column from 1st matrix xor 3rd row from 2nd matrix 
 	tmp[6] = (unsigned char)(state[4] ^ state[5] ^ mul2[state[6]] ^ mul3[state[7]]);
+	//2nd column from 1st matrix xor 4th row from 2nd matrix 
 	tmp[7] = (unsigned char)(mul3[state[4]] ^ state[5] ^ state[6] ^ mul2[state[7]]);
 
+	//3rd column from 1st matrix xor 1st row from 2nd matrix 
 	tmp[8] = (unsigned char)(mul2[state[8]] ^ mul3[state[9]] ^ state[10] ^ state[11]);
+	//3rd column from 1st matrix xor 2nd row from 2nd matrix 
 	tmp[9] = (unsigned char)(state[8] ^ mul2[state[9]] ^ mul3[state[10]] ^ state[11]);
+	//3rd column from 1st matrix xor 3rd row from 2nd matrix 
 	tmp[10] = (unsigned char)(state[8] ^ state[9] ^ mul2[state[10]] ^ mul3[state[11]]);
+	//3rd column from 1st matrix xor 4th row from 2nd matrix 
 	tmp[11] = (unsigned char)(mul3[state[8]] ^ state[9] ^ state[10] ^ mul2[state[11]]);
 
+	//4th column from 1st matrix xor 1st row from 2nd matrix 
 	tmp[12] = (unsigned char)(mul2[state[12]] ^ mul3[state[13]] ^ state[14] ^ state[15]);
+	//4th column from 1st matrix xor 2nd row from 2nd matrix 
 	tmp[13] = (unsigned char)(state[12] ^ mul2[state[13]] ^ mul3[state[14]] ^ state[15]);
+	//4th column from 1st matrix xor 3rd row from 2nd matrix 
 	tmp[14] = (unsigned char)(state[12] ^ state[13] ^ mul2[state[14]] ^ mul3[state[15]]);
+	//4th column from 1st matrix xor 4th row from 2nd matrix 
 	tmp[15] = (unsigned char)(mul3[state[12]] ^ state[13] ^ state[14] ^ mul2[state[15]]);
 
+	//Copy temporary array over the state:
 	for (int i = 0; i < 16; i++)
 	{
 		state[i] = tmp[i];
