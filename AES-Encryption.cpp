@@ -119,7 +119,7 @@ void KeyExpansionCore(unsigned char* in, unsigned char i)
 
 };
 
-void keyExpansion(unsigned char* inputKey, usigned char* expandedKeys) 
+void keyExpansion(unsigned char* inputKey, unsigned char* expandedKeys) 
 {
 	//Key Expansion: 
 		//takes an input key that's the first 16 bytes that are the original key and expands it to 176 bytes:
@@ -158,6 +158,7 @@ void keyExpansion(unsigned char* inputKey, usigned char* expandedKeys)
 };
 void subBytes(unsigned char* state) 
 {
+	// Replaces every byte in the state with S-Box value
 	for (int i = 0; i < 16; i++) {
 		state[i] = s_Box[state[i]];
 	}
@@ -331,13 +332,13 @@ void PrintHex(unsigned char x)
 		cout << (char)((x / 16 - 10) + 'A');
 
 	if (x % 16 < 10)
-		cout << (char)((x / 16) + '0');
+		cout << (char)((x % 16) + '0');
 	if (x % 16 >= 10)
-		cout << (char)((x / 16 - 10) + 'A');
+		cout << (char)((x % 16 - 10) + 'A');
 }
 int main() {
 	//Our messge which we'll encrypt using AES128:
-	unsigned char message[] = "This is the message we will encrypt"; //null terminated in memory
+	unsigned char message[] = "This is a message we will encrypt with AES!"; //null terminated in memory
 	//16 bytes key:
 	unsigned char key[16] = 
 	{ 
@@ -379,5 +380,7 @@ int main() {
 
 	//read a single character from the console without echoing the character:
 	_getch();
+	delete[] paddedMessage;
+
 	return 0;
 }
