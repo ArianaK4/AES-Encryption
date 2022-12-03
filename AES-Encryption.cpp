@@ -1,4 +1,6 @@
 #include <iostream>
+#include <conio.h>
+
 using namespace std;
 
 //Inserting the lookup table a.k.a substitution box - S-Box:
@@ -293,9 +295,14 @@ void AES_Encrypt(unsigned char* message, unsigned char* key)
 	for (int i = 0; i < 16; i++) {
 		state[i] = message[i];
 	}
-	int numberOfRounds = 1;
+	
+	//AES 128 requires 10 rounds, but FINAL ROUND is different :
+	int numberOfRounds = 9;
 
-	keyExpansion();
+	//Expand the keys:
+	unsigned char expandedKey[176]; //define char array of 175 byte, pass in original key and expand using the already defined method
+	keyExpansion(key, expandedKey);
+
 	addRoundKey(state, key); // addRoundKey
 
 	for (int i = 0; i < numberOfRounds; i++)
@@ -303,17 +310,74 @@ void AES_Encrypt(unsigned char* message, unsigned char* key)
 		subBytes(state);
 		shiftRows(state);
 		mixColumns(state);
-		addRoundKey(state, key);
+		addRoundKey(state, expandedKey + (16 * (i + 1))); //using expanded keys for the add round keys
 	}
 
-	// final round
+	//FINAL ROUND:
 	subBytes(state);
 	shiftRows(state);
-	addRoundKey(state, key);
+	addRoundKey(state, expandedKey + 160); //every 16 bytes in expanded key is a new round key
+
+	//Copy over the message with the encrypted message 
+	for (int i = 0; i < 16; i++)
+		message[i] = state[i];
 };
+void PrintHex(unsigned char x)
+{
+	//Print Hexcadecimal method:
+	if (x / 16 < 10)
+		cout << (char)((x / 16) + '0');
+	if (x / 16 >= 10)
+		cout << (char)((x / 16 - 10) + 'A');
+
+	if (x % 16 < 10)
+		cout << (char)((x / 16) + '0');
+	if (x % 16 >= 10)
+		cout << (char)((x / 16 - 10) + 'A');
+}
 int main() {
-	unsigned char message[] = "This is the message we will encrypt";
-	unsigned char key[16] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 };
-	AES_Encrypt(message, key);
+	//Our messge which we'll encrypt using AES128:
+	unsigned char message[] = "This is the message we will encrypt"; //null terminated in memory
+	//16 bytes key:
+	unsigned char key[16] = 
+	{ 
+		1, 2, 3, 4,
+		5, 6, 7, 8,
+		9, 10, 11, 12,
+		13, 14, 15, 16 
+	};
+
+	//Encrypting the whole message with AES128: pad the message with 16 bytes with 0
+	//Padding message:
+	int originalLen = strlen((const char*)message); //length of the message, report as str len
+	int lenOfPaddedMessage = originalLen;
+	
+	//if the original's msg len is fully divisible to 16 we won't have to add extra padding otherwise round it:
+	if (lenOfPaddedMessage % 16 != 0) 
+		lenOfPaddedMessage = (lenOfPaddedMessage / 16 + 1) * 16;
+
+	//Copy original message to padded message and add 0 at the end  of it if not fully divied to 16:
+	unsigned char* paddedMessage = new unsigned char[lenOfPaddedMessage];
+	for (int i = 0; i < lenOfPaddedMessage; i++)
+	{
+		if (i >= originalLen) paddedMessage[i] = 0;
+		else
+			paddedMessage[i] = message[i];
+	}
+
+	//Encryt padded message:
+	for(int i = 0; i < lenOfPaddedMessage; i += 16) //run through the padded message len jumping in blocks of 16 bytes
+		AES_Encrypt(paddedMessage+i, key);
+
+	
+	//Print out the result:
+	cout << "\nEncrypted message:" << endl;
+	for (int i = 0; i < lenOfPaddedMessage; i++) {
+		PrintHex(paddedMessage[i]);
+		cout << " ";
+	}
+
+	//read a single character from the console without echoing the character:
+	_getch();
 	return 0;
 }
